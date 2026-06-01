@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>하나 금융 상담 챗봇</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="chat-panel">
+        <header class="topbar">
+          <div>
+            <span class="eyebrow">Hana Financial Assistant</span>
+            <h1>하나 금융 상담 챗봇</h1>
+            <p class="service-copy">
+              우리는 계좌, ISA, 환전, 대출, 주식주문 등 자주 묻는 금융 주제에 빠르고 근거 있는 답변을 제공하는 상담 보조 서비스입니다.
+              반복 문의 시간을 줄이고 상담 대기 비용을 절약해, 고객은 더 빠르게 안내받고 상담사는 중요한 문의에 집중할 수 있습니다.
+            </p>
+            <p id="configSummary">데이터셋을 불러오는 중입니다.</p>
+          </div>
+          <div class="header-actions">
+            <div class="status" id="integrationStatus"></div>
+            <button class="ghost-button" id="flowToggle" type="button">처리 흐름</button>
+          </div>
+        </header>
+
+        <div class="conversation" id="conversation">
+          <div class="message bot">
+            <strong>하나 상담봇</strong>
+            <p>궁금한 금융 업무를 편하게 물어보세요. 기존 상담 데이터와 AI 모델을 함께 사용해 답변하고, 확신이 낮은 경우 상담사 연결을 안내합니다.</p>
+          </div>
+        </div>
+
+        <form class="composer" id="chatForm">
+          <textarea id="questionInput" rows="3" placeholder="예: ISA 계좌를 서민형으로 연장하려면 어떤 서류가 필요한가요?"></textarea>
+          <button type="submit">질문 보내기</button>
+        </form>
+      </section>
+
+      <div class="drawer-backdrop" id="drawerBackdrop"></div>
+      <aside class="debug-panel" id="debugPanel" aria-hidden="true">
+        <div class="panel-header">
+          <div>
+            <h2>처리 흐름</h2>
+            <p>질문이 어떤 경로로 답변까지 도달했는지 확인합니다.</p>
+          </div>
+          <div class="panel-actions">
+            <span id="routeBadge">대기</span>
+            <button class="icon-button" id="drawerClose" type="button" aria-label="처리 흐름 닫기">×</button>
+          </div>
+        </div>
+        <div class="architecture">
+          <div>질문</div>
+          <div>유사도 검색</div>
+          <div>direct / focused RAG / expanded RAG</div>
+          <div>LLM 생성</div>
+          <div>엔트로피·신뢰도 판단</div>
+        </div>
+        <ol class="trace" id="traceList"></ol>
+
+        <div class="panel-header">
+          <div>
+            <h2>근거 후보</h2>
+            <p>답변 생성에 사용된 주요 질답입니다.</p>
+          </div>
+          <span id="confidenceBadge">0%</span>
+        </div>
+        <div class="matches" id="matches"></div>
+      </aside>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
