@@ -1,7 +1,14 @@
 {
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/index.html"
+    }
+  ],
   "functions": {
     "api/*.js": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "includeFiles": "extracted_financial_qa.json"
     }
   }
 }
