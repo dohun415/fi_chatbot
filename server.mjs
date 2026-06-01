@@ -64,6 +64,8 @@ export async function handleRequest(req, res) {
   }
 }
 
+export default handleRequest;
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   server.listen(PORT, () => {
     console.log(`Financial RAG chatbot running at http://localhost:${PORT}`);
