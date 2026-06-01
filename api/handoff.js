@@ -1,15 +1,14 @@
-import { sendDiscordHandoff } from "../server.mjs";
-
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "Method not allowed" });
     return;
   }
 
+  const { sendDiscordHandoff } = await import("../server.mjs");
   const body = await readBody(req);
   const result = await sendDiscordHandoff(body);
   res.status(200).json(result);
-}
+};
 
 async function readBody(req) {
   if (req.body && typeof req.body === "object") return req.body;
