@@ -25,12 +25,8 @@ const RUNYOURAI_BASE_URL = (process.env.RUNYOURAI_BASE_URL || "").replace(/\/$/,
 const RUNYOURAI_MODEL = process.env.RUNYOURAI_MODEL || "";
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || "";
 
-const dataset = JSON.parse(await readFile(DATASET_PATH, "utf8"));
-const indexedDataset = dataset.map((item) => ({
-  ...item,
-  searchText: [item.topic, item.category, item.question, item.answer].filter(Boolean).join(" "),
-  vector: vectorize([item.topic, item.question, item.question, item.answer].filter(Boolean).join(" ")),
-}));
+let datasetCache = null;
+let indexedDatasetCache = null;
 
 const contentTypes = {
   ".html": "text/html; charset=utf-8",
@@ -46,7 +42,7 @@ export async function handleRequest(req, res) {
     const url = new URL(req.url, `http://${req.headers.host}`);
 
     if (req.method === "GET" && url.pathname === "/api/config") {
-      return sendJson(res, getConfig());
+      return sendJson(res, await getConfig());
     }
 
     if (req.method === "POST" && url.pathname === "/api/chat") {
@@ -74,7 +70,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   });
 }
 
-export function getConfig() {
+export async function getConfig() {
+  const { dataset } = await getDataset();
   return {
     datasetCount: dataset.length,
     topics: [...new Set(dataset.map((item) => item.topic))].sort(),
@@ -94,6 +91,7 @@ export function getConfig() {
 }
 
 export async function answerQuestion(question) {
+  const { dataset, indexedDataset } = await getDataset();
   if (!question) {
     return {
       answer: "질문을 입력해 주세요.",
@@ -268,6 +266,42 @@ export async function answerQuestion(question) {
     matches: selectedMatches,
     modelRaw: aiResult.raw,
   };
+}
+
+async function getDataset() {
+  if (datasetCache && indexedDatasetCache) {
+    return { dataset: datasetCache, indexedDataset: indexedDatasetCache };
+  }
+
+  const candidates = [
+    DATASET_PATH,
+    path.join(process.cwd(), "extracted_financial_qa.json"),
+    path.join("/var/task", "extracted_financial_qa.json"),
+  ];
+
+  let raw = null;
+  let lastError = null;
+  for (const candidate of candidates) {
+    try {
+      raw = await readFile(candidate, "utf8");
+      break;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  if (!raw) {
+    throw new Error(`데이터셋 파일을 찾을 수 없습니다: ${lastError?.message || "unknown error"}`);
+  }
+
+  datasetCache = JSON.parse(raw);
+  indexedDatasetCache = datasetCache.map((item) => ({
+    ...item,
+    searchText: [item.topic, item.category, item.question, item.answer].filter(Boolean).join(" "),
+    vector: vectorize([item.topic, item.question, item.question, item.answer].filter(Boolean).join(" ")),
+  }));
+
+  return { dataset: datasetCache, indexedDataset: indexedDatasetCache };
 }
 
 async function generateWithRunYourAI(question, matches, options = {}) {

@@ -5,5 +5,5 @@ export default async function handler(req, res) {
     res.status(405).json({ error: "Method not allowed" });
     return;
   }
-  res.status(200).json(getConfig());
+  res.status(200).json(await getConfig());
 }
